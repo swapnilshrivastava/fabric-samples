@@ -99,7 +99,7 @@ type marble struct {
 
 type user struct {
 	ObjectType string `json:"docType"` //docType is used to distinguish the various types of objects in state database
-	id         int    `json:"id"`    //the fieldtags are needed to keep case from bouncing around
+	id         string `json:"id"`    //the fieldtags are needed to keep case from bouncing around
 	userName   string `json:"username"`
 	password   string `json:"password"`
 	fname      string `json:"fname"`
