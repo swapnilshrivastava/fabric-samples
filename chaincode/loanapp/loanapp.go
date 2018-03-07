@@ -96,6 +96,18 @@ type marble struct {
 	Owner      string `json:"owner"`
 }
 
+
+type user struct {
+	ObjectType string `json:"docType"` //docType is used to distinguish the various types of objects in state database
+	id         int    `json:"id"`    //the fieldtags are needed to keep case from bouncing around
+	userName   string `json:"username"`
+	password   string `json:"password"`
+	fname      string `json:"fname"`
+	lname      string `json:"lname"`
+	role       string `json:"role"`
+
+}
+
 // ===================================================================================
 // Main
 // ===================================================================================
@@ -191,7 +203,7 @@ func (t *SimpleChaincode) createUser(stub shim.ChaincodeStubInterface, args []st
 
 	// ==== Create user object and marshal to JSON ====
 	objectType := "user"
-	user := &user{objectType, userId, userName, password, fname, lname, role}
+	user := &user{objectType, id, userName, password, fname, lname, role}
 	userJSONasBytes, err := json.Marshal(user)
 	if err != nil {
 		return shim.Error(err.Error())
