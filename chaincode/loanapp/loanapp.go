@@ -169,24 +169,24 @@ func (t *SimpleChaincode) createUser(stub shim.ChaincodeStubInterface, args []st
 	if len(args[3]) <= 0 {
 		return shim.Error("4th argument must be a non-empty string")
 	}
-	userId := args[0]
-    userName := args[1]
-    password := args[2]
+	id := args[0]
+        userName := args[1]
+        password := args[2]
 	fname := strings.ToLower(args[3])
 	lname := strings.ToLower(args[4])
 	//size, err := strconv.Atoi(args[2])
-    role := strings.ToUpper(args[5])
-	if err != nil {
+        role := strings.ToUpper(args[5])
+	/*if err != nil {
 		return shim.Error("3rd argument must be a numeric string")
-	}
+	}*/
 
 	// ==== Check if user already exists ====
 	userAsBytes, err := stub.GetState(userName)
 	if err != nil {
 		return shim.Error("Failed to get marble: " + err.Error())
 	} else if userAsBytes != nil {
-		fmt.Println("This marble already exists: " + userName)
-		return shim.Error("This marble already exists: " + userName)
+		fmt.Println("This user already exists: " + userName)
+		return shim.Error("This user already exists: " + userName)
 	}
 
 	// ==== Create user object and marshal to JSON ====
@@ -213,7 +213,7 @@ func (t *SimpleChaincode) createUser(stub shim.ChaincodeStubInterface, args []st
 	//  In our case, the composite key is based on indexName~color~name.
 	//  This will enable very efficient state range queries based on composite keys matching indexName~color~*
 	indexName := "user~name"
-	userNameIndexKey, err := stub.CreateCompositeKey(indexName, []string{marble.fname, marble.lname})
+	userNameIndexKey, err := stub.CreateCompositeKey(indexName, []string{fname, lname})
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -223,7 +223,7 @@ func (t *SimpleChaincode) createUser(stub shim.ChaincodeStubInterface, args []st
 	stub.PutState(userNameIndexKey, value)
     
 	// ==== User saved and indexed. Return success ====
-	fmt.Println("- end init marble")
+	fmt.Println("- end create user")
 	return shim.Success(nil)
 }
 
