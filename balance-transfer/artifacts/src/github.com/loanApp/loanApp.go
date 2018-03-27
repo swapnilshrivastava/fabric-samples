@@ -9,6 +9,8 @@ import (
 	"github.com/hyperledger/fabric/protos/peer"
 )
 
+var logger = shim.NewLogger("example_cc0")
+
 // SimpleAsset implements a simple chaincode to manage an asset
 type SimpleAsset struct {
 }
