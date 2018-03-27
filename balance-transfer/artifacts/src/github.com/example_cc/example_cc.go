@@ -151,6 +151,7 @@ func (t *SimpleChaincode) applyLoan(stub shim.ChaincodeStubInterface, args []str
 	var amt int       // Asset holdings
 	var X int         // Transaction value
 	var err error
+	var txId string
 
 	if len(args) != 2 {
 		return shim.Error("Incorrect number of arguments. Expecting 3, function followed by 1 userid and 1 loan amount")
@@ -196,10 +197,9 @@ func (t *SimpleChaincode) applyLoan(stub shim.ChaincodeStubInterface, args []str
 	if err != nil {
 		return shim.Error(err.Error())
 	}*/
-	resp, err := json.Marshal(ChaincodeResponse{
-		txID: stub.GetTxID()
-    })
-	return shim.Success(resp)
+
+	txId = stub.GetTxID()
+	return shim.Success(txId)
 }
 
 // Deletes an entity from state
