@@ -197,9 +197,11 @@ func (t *SimpleChaincode) applyLoan(stub shim.ChaincodeStubInterface, args []str
 	if err != nil {
 		return shim.Error(err.Error())
 	}*/
-
+	resp, err := json.Marshal(ChaincodeResponse{
+		txID: stub.GetTxID()
+	})
 	txId = stub.GetTxID()
-	return shim.Success(txId)
+	return shim.Success(resp)
 }
 
 // Deletes an entity from state
