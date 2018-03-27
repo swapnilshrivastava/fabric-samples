@@ -41,7 +41,7 @@ type loanApplication struct {
     return shim.Success(nil)
 }*/
 
-func (t *SimpleAsset) Init(stub shim.ChaincodeStubInterface) pb.Response {
+func (t *SimpleAsset) Init(stub shim.ChaincodeStubInterface) peer.Response {
 	logger.Info("########### example_cc0 Init ###########")
 
 	_, args := stub.GetFunctionAndParameters()
