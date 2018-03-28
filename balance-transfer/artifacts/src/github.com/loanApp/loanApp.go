@@ -32,9 +32,7 @@ type loanApplication struct {
     if len(args) != 2 {
             return shim.Error("Incorrect arguments. Expecting a key and a value")
     }
-
     // Set up any variables or assets here by calling stub.PutState()
-
     // We store the key and the value on the ledger
     err := stub.PutState(args[0], []byte(args[1]))
     if err != nil {
@@ -88,10 +86,12 @@ func (t *SimpleAsset) Invoke(stub shim.ChaincodeStubInterface) peer.Response {
 
 	var result string
 	var err error
-	if fn == "set" {
-		result, err = set(stub, args)
-	} else { // assume 'get' even if fn is nil
-		result, err = get(stub, args)
+	if fn == "createLoanRequest" {
+		result, err = createLoanRequest(stub, args)
+	} else if fn == "getLoanOfUser" { // assume 'get' even if fn is nil
+		result, err = getLoanOfUser(stub, args)
+	} else {
+		result, err = updateLoanStatus(stub, args)
 	}
 	if err != nil {
 		return shim.Error(err.Error())
@@ -103,7 +103,7 @@ func (t *SimpleAsset) Invoke(stub shim.ChaincodeStubInterface) peer.Response {
 
 // Set stores the asset (both key and value) on the ledger. If the key exists,
 // it will override the value with the new one
-func set(stub shim.ChaincodeStubInterface, args []string) (string, error) {
+func createLoanRequest(stub shim.ChaincodeStubInterface, args []string) (string, error) {
 	if len(args) != 2 {
 		return "", fmt.Errorf("Incorrect arguments. Expecting a key and a value")
 	}
@@ -125,7 +125,7 @@ func set(stub shim.ChaincodeStubInterface, args []string) (string, error) {
 }
 
 // Get returns the value of the specified asset key
-func get(stub shim.ChaincodeStubInterface, args []string) (string, error) {
+func getLoanOfUser(stub shim.ChaincodeStubInterface, args []string) (string, error) {
 	if len(args) != 1 {
 		return "", fmt.Errorf("Incorrect arguments. Expecting a key")
 	}
@@ -138,6 +138,28 @@ func get(stub shim.ChaincodeStubInterface, args []string) (string, error) {
 		return "", fmt.Errorf("Asset not found: %s", args[0])
 	}
 	return string(value), nil
+}
+
+// Set stores the asset (both key and value) on the ledger. If the key exists,
+// it will override the value with the new one
+func updateLoanStatus(stub shim.ChaincodeStubInterface, args []string) (string, error) {
+
+	if len(args) != 2 {
+		return "", fmt.Errorf("Incorrect arguments. Expecting a key and a value")
+	}
+	var loanApplicationId = args[0]
+	var loanApplicationStatus = args[1]
+
+	loanAsBytes, _ := stub.GetState(loanApplicationId)
+	loanApplication := loanApplication{}
+
+	json.Unmarshal(loanAsBytes, &loanApplication)
+	loanApplication.Status = loanApplicationStatus
+
+	loanAsBytes, _ = json.Marshal(loanApplication)
+	stub.PutState(args[0], loanAsBytes)
+
+	return loanApplicationStatus, nil
 }
 
 // main function starts up the chaincode in the container during instantiate
