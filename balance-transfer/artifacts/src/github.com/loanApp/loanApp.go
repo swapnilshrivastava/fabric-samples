@@ -109,10 +109,10 @@ func createLoanRequest(stub shim.ChaincodeStubInterface, args []string) (string,
 	}
 	var loanApplicationId = args[0]
 	var loanApplicationInput = args[1]
-	ID := "123"
-	Status := "123"
-	RequestedAmount := "100000"
-	ProcessedBy := "456"
+	ID := loanApplicationId
+	Status := "Requested"
+	RequestedAmount := loanApplicationInput
+	ProcessedBy := "Bank456"
 
 	loanApplication := &loanApplication{ID, Status, RequestedAmount, ProcessedBy}
 	loanApplicationJSONasBytes, err := json.Marshal(loanApplication)
