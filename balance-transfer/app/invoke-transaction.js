@@ -142,7 +142,7 @@ var invokeChaincode = function(peerNames, channelName, chaincodeName, fcn, args,
 		if (response.status === 'SUCCESS') {
 			logger.info('Successfully sent transaction to the orderer.');
 			console.log('response - - - - - - ', response);
-			return {"tx_ID" :tx_id.getTransactionID(), "data":proposalResponses[0].response.payload};
+			return {"tx_ID" :tx_id.getTransactionID(), "data":proposalResponses};
 		} else {
 			logger.error('Failed to order the transaction. Error code: ' + response.status);
 			return 'Failed to order the transaction. Error code: ' + response.status;
