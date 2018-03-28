@@ -30,7 +30,7 @@ var invokeChaincode = function(peerNames, channelName, chaincodeName, fcn, args,
 	var channel = helper.getChannelForOrg(org);
 	var targets = (peerNames) ? helper.newPeers(peerNames, org) : undefined;
 	var tx_id = null;
-
+	var proposalResponses;
 	return helper.getRegisteredUsers(username, org).then((user) => {
 		tx_id = client.newTransactionID();
 		logger.debug(util.format('Sending transaction "%j"', tx_id));
@@ -51,7 +51,7 @@ var invokeChaincode = function(peerNames, channelName, chaincodeName, fcn, args,
 		logger.error('Failed to enroll user \'' + username + '\'. ' + err);
 		throw new Error('Failed to enroll user \'' + username + '\'. ' + err);
 	}).then((results) => {
-		var proposalResponses = results[0];
+		proposalResponses = results[0];
 		var proposal = results[1];
 		var all_good = true;
 		for (var i in proposalResponses) {
@@ -141,7 +141,7 @@ var invokeChaincode = function(peerNames, channelName, chaincodeName, fcn, args,
 	}).then((response) => {
 		if (response.status === 'SUCCESS') {
 			logger.info('Successfully sent transaction to the orderer.');
-			return tx_id.getTransactionID();
+			return {"tx_ID" :tx_id.getTransactionID(), "data":proposalResponses[0].response.payload};
 		} else {
 			logger.error('Failed to order the transaction. Error code: ' + response.status);
 			return 'Failed to order the transaction. Error code: ' + response.status;
