@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"strconv"
@@ -15,12 +16,21 @@ var logger = shim.NewLogger("example_cc0")
 type SimpleAsset struct {
 }
 
+type user struct {
+	id        string `json:"id"`
+	username  string `json:"username"`
+	password  string `json:"password"`
+	firstname string `json:"firstname"`
+	lastname  string `json:"lastname"`
+	role      string `json:"role"`
+}
+
 type loanApplication struct {
-	ID string `json:"id"`
-	//UserId user `json:"id"`
-	Status          string `json:"status"`
-	RequestedAmount string `json:"requestedAmount"`
-	ProcessedBy     string `json:"processedby"`
+	id              string `json:"id"`
+	dealerId        string `json:"dealerId"`
+	status          string `json:"status"`
+	requestedAmount string `json:"requestedAmount"`
+	bankId          string `json:"bankId"`
 }
 
 // Init is called during chaincode instantiation to initialize any
@@ -90,6 +100,8 @@ func (t *SimpleAsset) Invoke(stub shim.ChaincodeStubInterface) peer.Response {
 		result, err = createLoanRequest(stub, args)
 	} else if fn == "getLoanOfUser" { // assume 'get' even if fn is nil
 		result, err = getLoanOfUser(stub, args)
+	} else if fn == "queryLoanByBank" {
+		return t.queryLoanByBank(stub, args)
 	} else {
 		result, err = updateLoanStatus(stub, args)
 	}
@@ -109,12 +121,16 @@ func createLoanRequest(stub shim.ChaincodeStubInterface, args []string) (string,
 	}
 	var loanApplicationId = args[0]
 	var loanApplicationInput = args[1]
-	ID := loanApplicationId
-	Status := "Requested"
-	RequestedAmount := loanApplicationInput
-	ProcessedBy := "Bank456"
+	var loanDealerId = args[2]
+	var loanBankId = args[3]
 
-	loanApplication := &loanApplication{ID, Status, RequestedAmount, ProcessedBy}
+	id := loanApplicationId
+	dealerId := loanDealerId
+	status := "Requested"
+	requestedAmount := loanApplicationInput
+	bankId := loanBankId
+
+	loanApplication := &loanApplication{id, dealerId, status, requestedAmount, bankId}
 	loanApplicationJSONasBytes, err := json.Marshal(loanApplication)
 
 	err = stub.PutState(loanApplicationId, []byte(loanApplicationJSONasBytes))
@@ -154,12 +170,76 @@ func updateLoanStatus(stub shim.ChaincodeStubInterface, args []string) (string, 
 	loanApplication := loanApplication{}
 
 	json.Unmarshal(loanAsBytes, &loanApplication)
-	loanApplication.Status = loanApplicationStatus
+	loanApplication.status = loanApplicationStatus
 
 	loanAsBytes, _ = json.Marshal(loanApplication)
-	stub.PutState(args[0], loanAsBytes)
+	stub.PutState(loanApplicationId, loanAsBytes)
 
 	return loanApplicationStatus, nil
+}
+
+// Query loan by bank
+func (t *SimpleAsset) queryLoanByBank(stub shim.ChaincodeStubInterface, args []string) peer.Response {
+
+	if len(args) < 1 {
+		return shim.Error("Incorrect number of arguments. Expecting 1")
+	}
+
+	bankId := args[0]
+
+	queryString := fmt.Sprintf("{\"selector\":{\"docType\":\"loanApplication\",\"bankId\":\"%s\"}}", bankId)
+
+	queryResults, err := getQueryResultForQueryString(stub, queryString)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	return shim.Success(queryResults)
+}
+
+// =========================================================================================
+// getQueryResultForQueryString executes the passed in query string.
+// Result set is built and returned as a byte array containing the JSON results.
+// =========================================================================================
+func getQueryResultForQueryString(stub shim.ChaincodeStubInterface, queryString string) ([]byte, error) {
+
+	fmt.Printf("- getQueryResultForQueryString queryString:\n%s\n", queryString)
+
+	resultsIterator, err := stub.GetQueryResult(queryString)
+	if err != nil {
+		return nil, err
+	}
+	defer resultsIterator.Close()
+
+	// buffer is a JSON array containing QueryRecords
+	var buffer bytes.Buffer
+	buffer.WriteString("[")
+
+	bArrayMemberAlreadyWritten := false
+	for resultsIterator.HasNext() {
+		queryResponse, err := resultsIterator.Next()
+		if err != nil {
+			return nil, err
+		}
+		// Add a comma before array members, suppress it for the first array member
+		if bArrayMemberAlreadyWritten == true {
+			buffer.WriteString(",")
+		}
+		buffer.WriteString("{\"Key\":")
+		buffer.WriteString("\"")
+		buffer.WriteString(queryResponse.Key)
+		buffer.WriteString("\"")
+
+		buffer.WriteString(", \"Record\":")
+		// Record is a JSON object, so we write as-is
+		buffer.WriteString(string(queryResponse.Value))
+		buffer.WriteString("}")
+		bArrayMemberAlreadyWritten = true
+	}
+	buffer.WriteString("]")
+
+	fmt.Printf("- getQueryResultForQueryString queryResult:\n%s\n", buffer.String())
+
+	return buffer.Bytes(), nil
 }
 
 // main function starts up the chaincode in the container during instantiate
