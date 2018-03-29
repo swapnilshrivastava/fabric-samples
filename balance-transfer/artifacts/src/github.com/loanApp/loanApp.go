@@ -167,7 +167,7 @@ func updateLoanStatus(stub shim.ChaincodeStubInterface, args []string) (string, 
 	loanApplication := loanApplication{}
 
 	json.Unmarshal(loanAsBytes, &loanApplication)
-	loanApplication.status = loanApplicationStatus
+	loanApplication.Status = loanApplicationStatus
 
 	loanAsBytes, _ = json.Marshal(loanApplication)
 	stub.PutState(loanApplicationId, loanAsBytes)
