@@ -26,11 +26,11 @@ type user struct {
 }
 
 type loanApplication struct {
-	id              string `json:"id"`
-	dealerId        string `json:"dealerId"`
-	status          string `json:"status"`
-	requestedAmount string `json:"requestedAmount"`
-	bankId          string `json:"bankId"`
+	ID string `json:"id"`
+	//UserId user `json:"id"`
+	Status          string `json:"status"`
+	RequestedAmount string `json:"requestedAmount"`
+	ProcessedBy     string `json:"processedby"`
 }
 
 // Init is called during chaincode instantiation to initialize any
@@ -122,13 +122,12 @@ func createLoanRequest(stub shim.ChaincodeStubInterface, args []string) (string,
 	var loanApplicationId = args[0]
 	var loanApplicationInput = args[1]
 
-	id := loanApplicationId
-	dealerId := "Dealer123"
-	status := "Requested"
-	requestedAmount := loanApplicationInput
-	bankId := "Bank456"
+	ID := loanApplicationId
+	Status := "Requested"
+	RequestedAmount := loanApplicationInput
+	ProcessedBy := "Bank456"
 
-	loanApplication := &loanApplication{id, dealerId, status, requestedAmount, bankId}
+	loanApplication := &loanApplication{ID, Status, RequestedAmount, ProcessedBy}
 	loanApplicationJSONasBytes, err := json.Marshal(loanApplication)
 
 	err = stub.PutState(loanApplicationId, []byte(loanApplicationJSONasBytes))
@@ -183,9 +182,9 @@ func (t *SimpleAsset) queryLoanByBank(stub shim.ChaincodeStubInterface, args []s
 		return shim.Error("Incorrect number of arguments. Expecting 1")
 	}
 
-	bankId := args[0]
+	ProcessedBy := args[0]
 
-	queryString := fmt.Sprintf("{\"selector\":{\"docType\":\"loanApplication\",\"bankId\":\"%s\"}}", bankId)
+	queryString := fmt.Sprintf("{\"selector\":{\"docType\":\"loanApplication\",\"ProcessedBy\":\"%s\"}}", ProcessedBy)
 
 	queryResults, err := getQueryResultForQueryString(stub, queryString)
 	if err != nil {
