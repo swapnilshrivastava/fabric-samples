@@ -317,6 +317,7 @@ app.get('/channels/:channelName/chaincodes/:chaincodeName', function(req, res) {
 
 	query.queryChaincode(peer, channelName, chaincodeName, args, fcn, req.username, req.orgname)
 	.then(function(message) {
+		console.log("Reposne - ", message);
 		res.send(message);
 	});
 });

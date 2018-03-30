@@ -191,6 +191,7 @@ func (t *SimpleAsset) queryLoanByBank(stub shim.ChaincodeStubInterface, args []s
 	if err != nil {
 		return shim.Error(err.Error())
 	}
+	fmt.Printf("- queryLoanByBank queryResults - -  -:\n%s\n", queryResults)
 	return shim.Success(queryResults)
 }
 
