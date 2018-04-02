@@ -26,11 +26,11 @@ type user struct {
 }
 
 type loanApplication struct {
-	ID string `json:"id"`
-	//UserId user `json:"id"`
-	Status          string `json:"status"`
-	RequestedAmount string `json:"requestedAmount"`
-	ProcessedBy     string `json:"processedby"`
+	id              string `json:"id"`
+	dealerId        string `json:"dealerId"`
+	status          string `json:"status"`
+	requestedAmount string `json:"requestedAmount"`
+	bankId          string `json:"bankId"`
 }
 
 // Init is called during chaincode instantiation to initialize any
@@ -121,13 +121,16 @@ func createLoanRequest(stub shim.ChaincodeStubInterface, args []string) (string,
 	}
 	var loanApplicationId = args[0]
 	var loanApplicationInput = args[1]
+	var loanApplicationdealerId = args[2]
+	var loanApplicationbankId = args[3]
 
-	ID := loanApplicationId
-	Status := "Requested"
-	RequestedAmount := loanApplicationInput
-	ProcessedBy := "Bank456"
+	id := loanApplicationId
+	dealerId := loanApplicationdealerId
+	status := "Requested"
+	requestedAmount := loanApplicationInput
+	bankId := loanApplicationbankId
 
-	loanApplication := &loanApplication{ID, Status, RequestedAmount, ProcessedBy}
+	loanApplication := &loanApplication{id, dealerId, status, requestedAmount, bankId}
 	loanApplicationJSONasBytes, err := json.Marshal(loanApplication)
 
 	err = stub.PutState(loanApplicationId, []byte(loanApplicationJSONasBytes))
@@ -167,7 +170,7 @@ func updateLoanStatus(stub shim.ChaincodeStubInterface, args []string) (string, 
 	loanApplication := loanApplication{}
 
 	json.Unmarshal(loanAsBytes, &loanApplication)
-	loanApplication.Status = loanApplicationStatus
+	loanApplication.status = loanApplicationStatus
 
 	loanAsBytes, _ = json.Marshal(loanApplication)
 	stub.PutState(loanApplicationId, loanAsBytes)
@@ -182,16 +185,14 @@ func (t *SimpleAsset) queryLoanByBank(stub shim.ChaincodeStubInterface, args []s
 		return shim.Error("Incorrect number of arguments. Expecting 1")
 	}
 
-	ProcessedBy := args[0]
+	bankId := args[0]
 
-	//queryString := fmt.Sprintf("{\"selector\":{\"docType\":\"loanApplication\",\"ProcessedBy\":\"%s\"}}", ProcessedBy)
-	queryString := fmt.Sprintf("{\"selector\":{\"processedby\":{\"$eq\":\"%s\"}}}", ProcessedBy)
+	queryString := fmt.Sprintf("{\"selector\":{\"docType\":\"loanApplication\",\"bankId\":\"%s\"}}", bankId)
 
 	queryResults, err := getQueryResultForQueryString(stub, queryString)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	fmt.Printf("- queryLoanByBank queryResults - -  -:\n%s\n", queryResults)
 	return shim.Success(queryResults)
 }
 
