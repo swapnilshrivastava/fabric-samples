@@ -130,7 +130,13 @@ func createLoanRequest(stub shim.ChaincodeStubInterface, args []string) (string,
 	requestedAmount := loanApplicationInput
 	bankId := loanApplicationbankId
 
-	loanApplication := &loanApplication{id, dealerId, status, requestedAmount, bankId}
+	var loanApplication = loanApplication{id: args[0], dealerId: args[2], status, requestedAmount: args[1], bankId: args[3]}
+
+	/*carAsBytes, _ := json.Marshal(car)
+	APIstub.PutState(args[0], carAsBytes)
+
+	loanApplication := &loanApplication{id, dealerId, status, requestedAmount, bankId}*/
+
 	loanApplicationJSONasBytes, err := json.Marshal(loanApplication)
 
 	err = stub.PutState(loanApplicationId, []byte(loanApplicationJSONasBytes))
