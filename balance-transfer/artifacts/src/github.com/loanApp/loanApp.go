@@ -26,12 +26,11 @@ type user struct {
 }
 
 type loanApplication struct {
-	ObjectType string `json:"docType"`
-	id              string `json:"id"`
-	dealerId        string `json:"dealerId"`
-	status          string `json:"status"`
-	requestedAmount string `json:"requestedAmount"`
-	bankId          string `json:"bankId"`
+	ID string `json:"id"`
+	//UserId user `json:"id"`
+	Status string `json:"status"`
+	RequestedAmount string `json:"requestedAmount"`
+	ProcessedBy string `json:"processedby"`
 }
 
 // Init is called during chaincode instantiation to initialize any
@@ -117,41 +116,25 @@ func (t *SimpleAsset) Invoke(stub shim.ChaincodeStubInterface) peer.Response {
 // Set stores the asset (both key and value) on the ledger. If the key exists,
 // it will override the value with the new one
 func createLoanRequest(stub shim.ChaincodeStubInterface, args []string) (string, error) {
-	if len(args) != 4 {
-		return "", fmt.Errorf("Incorrect arguments. Expecting a key and a value")
-	}
-	/*var loanApplicationId = args[0]
+	 if len(args) != 2 {
+            return "", fmt.Errorf("Incorrect arguments. Expecting a key and a value")
+    }
+	var loanApplicationId = args[0]
 	var loanApplicationInput = args[1]
-	var loanApplicationdealerId = args[2]
-	var loanApplicationbankId = args[3]*/
+	ID := "123"
+	Status := "123"
+	RequestedAmount := "100000"
+	ProcessedBy := "456"
 	
-	
-	id := args[0]
-	dealerId := args[2]
-	status := "Requested"
-	requestedAmount := args[1]
-	bankId := args[3]
-
-	objectType := "loanApplication"
-	loanApplication := &loanApplication{objectType, id, dealerId, status, requestedAmount, bankId}
+	loanApplication := &loanApplication{ID, Status, RequestedAmount, ProcessedBy}
 	loanApplicationJSONasBytes, err := json.Marshal(loanApplication)
-	if err != nil {
-		return "", fmt.Errorf("Unable to marshal")
-	}
-	//loanApplication := &loanApplication{id, dealerId, status, requestedAmount, bankId}
-
-	//loanApplicationJSONasBytes, err := json.Marshal(loanApplication)
 	
-	err = stub.PutState(id, loanApplicationJSONasBytes)
-	if err != nil {
-		return "", fmt.Errorf("Failed to set asset: %s", args[0])
-	}
+    err = stub.PutState(loanApplicationId, []byte(loanApplicationJSONasBytes))
+    if err != nil {
+            return "", fmt.Errorf("Failed to set asset: %s", args[0])
+    }
+    return loanApplicationInput, nil
 
-	/*err = stub.PutState(loanApplicationId, []byte(loanApplicationJSONasBytes))
-	if err != nil {
-		return "", fmt.Errorf("Failed to set asset: %s", args[0])
-	}*/
-	return id, nil
 }
 
 // Get returns the value of the specified asset key
@@ -184,7 +167,7 @@ func updateLoanStatus(stub shim.ChaincodeStubInterface, args []string) (string, 
 	loanApplication := loanApplication{}
 
 	json.Unmarshal(loanAsBytes, &loanApplication)
-	loanApplication.status = loanApplicationStatus
+	loanApplication.Status = loanApplicationStatus
 
 	loanAsBytes, _ = json.Marshal(loanApplication)
 	stub.PutState(loanApplicationId, loanAsBytes)
