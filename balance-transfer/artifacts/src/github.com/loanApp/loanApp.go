@@ -26,6 +26,7 @@ type user struct {
 }
 
 type loanApplication struct {
+	ObjectType string `json:"docType"`
 	id              string `json:"id"`
 	dealerId        string `json:"dealerId"`
 	status          string `json:"status"`
@@ -119,31 +120,38 @@ func createLoanRequest(stub shim.ChaincodeStubInterface, args []string) (string,
 	if len(args) != 4 {
 		return "", fmt.Errorf("Incorrect arguments. Expecting a key and a value")
 	}
-	var loanApplicationId = args[0]
+	/*var loanApplicationId = args[0]
 	var loanApplicationInput = args[1]
-	//var loanApplicationdealerId = args[2]
-	//var loanApplicationbankId = args[3]
-
-	/*id := loanApplicationId
-	dealerId := loanApplicationdealerId
+	var loanApplicationdealerId = args[2]
+	var loanApplicationbankId = args[3]*/
+	
+	
+	id := args[0]
+	dealerId := args[2]
 	status := "Requested"
-	requestedAmount := loanApplicationInput
-	bankId := loanApplicationbankId*/
+	requestedAmount := args[1]
+	bankId := args[3]
 
-	var loanApplication = loanApplication{id: args[0], dealerId: args[2], status: "Requested", requestedAmount: args[1], bankId: args[3]}
-
-	/*carAsBytes, _ := json.Marshal(car)
-	APIstub.PutState(args[0], carAsBytes)
-
-	loanApplication := &loanApplication{id, dealerId, status, requestedAmount, bankId}*/
-
+	objectType := "loanApplication"
+	loanApplication := &loanApplication{objectType, id, dealerId, status, requestedAmount, bankId}
 	loanApplicationJSONasBytes, err := json.Marshal(loanApplication)
+	if err != nil {
+		return "", fmt.Errorf("Unable to marshal")
+	}
+	//loanApplication := &loanApplication{id, dealerId, status, requestedAmount, bankId}
 
-	err = stub.PutState(loanApplicationId, []byte(loanApplicationJSONasBytes))
+	//loanApplicationJSONasBytes, err := json.Marshal(loanApplication)
+	
+	err = stub.PutState(id, loanApplicationJSONasBytes)
 	if err != nil {
 		return "", fmt.Errorf("Failed to set asset: %s", args[0])
 	}
-	return loanApplicationInput, nil
+
+	/*err = stub.PutState(loanApplicationId, []byte(loanApplicationJSONasBytes))
+	if err != nil {
+		return "", fmt.Errorf("Failed to set asset: %s", args[0])
+	}*/
+	return id, nil
 }
 
 // Get returns the value of the specified asset key
