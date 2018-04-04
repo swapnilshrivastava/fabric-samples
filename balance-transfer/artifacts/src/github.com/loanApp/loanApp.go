@@ -116,47 +116,26 @@ func (t *SimpleAsset) Invoke(stub shim.ChaincodeStubInterface) peer.Response {
 // Set stores the asset (both key and value) on the ledger. If the key exists,
 // it will override the value with the new one
 func createLoanRequest(stub shim.ChaincodeStubInterface, args []string) (string, error) {
-	//   0       1       2     3
-	// "asdf", "blue", "35", "bob"
 	if len(args) != 4 {
 		return "", fmt.Errorf("Incorrect arguments. Expecting a key and a value")
 	}
+	var loanApplicationId = args[0]
 
-	// ==== Input sanitation ====
-	fmt.Println("- Creating loan request")
-	if len(args[0]) <= 0 {
-		return "", fmt.Errorf("1st argument must be a non-empty string")
-	}
-	if len(args[1]) <= 0 {
-		return "", fmt.Errorf("2nd argument must be a non-empty string")
-	}
-	if len(args[2]) <= 0 {
-		return "", fmt.Errorf("3rd argument must be a non-empty string")
-	}
-	if len(args[3]) <= 0 {
-		return "", fmt.Errorf("4th argument must be a non-empty string")
-	}
-	id := args[0]
-	dealerId := args[1]
-	status := "Requested"
+	//id := loanApplicationId
+	/*dealerId := args[1]
 	requestedAmount := args[2]
 	bankId := args[3]
-	
+	status := "Requested"*/
 
-	// ==== Create loanApplication object and marshal to JSON ====
-	
-	loanApplication := &loanApplication{id, dealerId, status, requestedAmount, bankId}
+	loanApplication := &loanApplication{id: loanApplicationId, dealerId: args[1], requestedAmount: args[2], bankId: args[3], status: "Requested"}
+
 	loanApplicationJSONasBytes, err := json.Marshal(loanApplication)
+
+	err = stub.PutState(loanApplicationId, []byte(loanApplicationJSONasBytes))
 	if err != nil {
 		return "", fmt.Errorf("Failed to set asset: %s", args[0])
 	}
-	
-	// === Save marble to state ===
-	err = stub.PutState(id, loanApplicationJSONasBytes)
-	if err != nil {
-		return "", fmt.Errorf("Failed to set asset: %s", args[0])
-	}
-	return id, nil
+	return args[0], nil
 }
 
 // Get returns the value of the specified asset key
