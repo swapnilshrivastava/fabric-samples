@@ -26,7 +26,6 @@ type user struct {
 }
 
 type loanApplication struct {
-	ObjectType string `json:"docType"`
 	id              string `json:"id"`
 	dealerId        string `json:"dealerId"`
 	status          string `json:"status"`
@@ -145,8 +144,8 @@ func createLoanRequest(stub shim.ChaincodeStubInterface, args []string) (string,
 	
 
 	// ==== Create loanApplication object and marshal to JSON ====
-	objectType := "loanApplication"
-	loanApplication := &loanApplication{objectType, id, dealerId, status, requestedAmount, bankId}
+	
+	loanApplication := &loanApplication{id, dealerId, status, requestedAmount, bankId}
 	loanApplicationJSONasBytes, err := json.Marshal(loanApplication)
 	if err != nil {
 		return "", fmt.Errorf("Failed to set asset: %s", args[0])
