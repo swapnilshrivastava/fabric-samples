@@ -26,11 +26,11 @@ type user struct {
 }
 
 type loanApplication struct {
-	ID string `json:"id"`
-	//UserId user `json:"id"`
-	Status          string `json:"status"`
-	RequestedAmount string `json:"requestedAmount"`
-	ProcessedBy     string `json:"processedby"`
+	id              string `json:"id"`
+	dealerId        string `json:"dealerId"`
+	status          string `json:"status"`
+	requestedAmount string `json:"requestedAmount"`
+	bankId          string `json:"bankId"`
 }
 
 // Init is called during chaincode instantiation to initialize any
@@ -116,25 +116,47 @@ func (t *SimpleAsset) Invoke(stub shim.ChaincodeStubInterface) peer.Response {
 // Set stores the asset (both key and value) on the ledger. If the key exists,
 // it will override the value with the new one
 func createLoanRequest(stub shim.ChaincodeStubInterface, args []string) (string, error) {
-	if len(args) != 2 {
+	//   0       1       2     3
+	// "asdf", "blue", "35", "bob"
+	if len(args) != 4 {
 		return "", fmt.Errorf("Incorrect arguments. Expecting a key and a value")
 	}
-	var loanApplicationId = args[0]
-	var loanApplicationInput = args[1]
 
-	ID := loanApplicationId
-	Status := "Requested"
-	RequestedAmount := loanApplicationInput
-	ProcessedBy := "Bank456"
+	// ==== Input sanitation ====
+	fmt.Println("- Creating loan request")
+	if len(args[0]) <= 0 {
+		return "", fmt.Errorf("1st argument must be a non-empty string")
+	}
+	if len(args[1]) <= 0 {
+		return "", fmt.Errorf("2nd argument must be a non-empty string")
+	}
+	if len(args[2]) <= 0 {
+		return "", fmt.Errorf("3rd argument must be a non-empty string")
+	}
+	if len(args[3]) <= 0 {
+		return "", fmt.Errorf("4th argument must be a non-empty string")
+	}
+	id := args[0]
+	dealerId := args[1]
+	status := "Requested"
+	requestedAmount := args[2]
+	bankId := args[3]
+	
 
-	loanApplication := &loanApplication{ID, Status, RequestedAmount, ProcessedBy}
+	// ==== Create loanApplication object and marshal to JSON ====
+	
+	loanApplication := &loanApplication{id, dealerId, status, requestedAmount, bankId}
 	loanApplicationJSONasBytes, err := json.Marshal(loanApplication)
-
-	err = stub.PutState(loanApplicationId, []byte(loanApplicationJSONasBytes))
 	if err != nil {
 		return "", fmt.Errorf("Failed to set asset: %s", args[0])
 	}
-	return loanApplicationInput, nil
+	
+	// === Save marble to state ===
+	err = stub.PutState(id, loanApplicationJSONasBytes)
+	if err != nil {
+		return "", fmt.Errorf("Failed to set asset: %s", args[0])
+	}
+	return id, nil
 }
 
 // Get returns the value of the specified asset key
@@ -167,7 +189,7 @@ func updateLoanStatus(stub shim.ChaincodeStubInterface, args []string) (string, 
 	loanApplication := loanApplication{}
 
 	json.Unmarshal(loanAsBytes, &loanApplication)
-	loanApplication.Status = loanApplicationStatus
+	loanApplication.status = loanApplicationStatus
 
 	loanAsBytes, _ = json.Marshal(loanApplication)
 	stub.PutState(loanApplicationId, loanAsBytes)
@@ -182,16 +204,14 @@ func (t *SimpleAsset) queryLoanByBank(stub shim.ChaincodeStubInterface, args []s
 		return shim.Error("Incorrect number of arguments. Expecting 1")
 	}
 
-	ProcessedBy := args[0]
+	bankId := args[0]
 
-	//queryString := fmt.Sprintf("{\"selector\":{\"docType\":\"loanApplication\",\"ProcessedBy\":\"%s\"}}", ProcessedBy)
-	queryString := fmt.Sprintf("{\"selector\":{\"processedby\":{\"$eq\":\"%s\"}}}", ProcessedBy)
+	queryString := fmt.Sprintf("{\"selector\":{\"docType\":\"loanApplication\",\"bankId\":\"%s\"}}", bankId)
 
 	queryResults, err := getQueryResultForQueryString(stub, queryString)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	fmt.Printf("- queryLoanByBank queryResults - -  -:\n%s\n", queryResults)
 	return shim.Success(queryResults)
 }
 
