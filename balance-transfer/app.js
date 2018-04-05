@@ -285,7 +285,7 @@ app.post('/channels/:channelName/chaincodes/:chaincodeName', function(req, res) 
 		return;
 	}
 
-	if(fcn == 'createLoanRequest'){
+	/*if(fcn == 'createLoanRequest'){
 		var userid = req.body.userId;
 		var loanAmount = req.body.loanAmount;
 		var query = 'INSERT INTO applications (user_id, amount_requested) VALUES (' + userid + ', ' + loanAmount + ')';
@@ -293,7 +293,7 @@ app.post('/channels/:channelName/chaincodes/:chaincodeName', function(req, res) 
 		if (err) throw err
 			logger.info("Data saved successfully")
 		});
-	}
+	}*/
 	
 	invoke.invokeChaincode(peers, channelName, chaincodeName, fcn, args, req.username, req.orgname)
 	.then(function(message) {
