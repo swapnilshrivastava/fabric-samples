@@ -40,6 +40,15 @@ var invoke = require('./app/invoke-transaction.js');
 var query = require('./app/query.js');
 var host = process.env.HOST || hfc.getConfigSetting('host');
 var port = process.env.PORT || hfc.getConfigSetting('port');
+var router = express.Router();
+var mysql = require('mysql')
+var connection = mysql.createConnection({
+  host     : '10.20.14.82',
+  user     : 'root',
+  password : 'root',
+  database : 'loandb'
+});
+
 ///////////////////////////////////////////////////////////////////////////////
 //////////////////////////////// SET CONFIGURATONS ////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
@@ -276,6 +285,16 @@ app.post('/channels/:channelName/chaincodes/:chaincodeName', function(req, res) 
 		return;
 	}
 
+	if(fcn == 'createLoanRequest'){
+		var userid = req.body.userId;
+		var loanAmount = req.body.loanAmount;
+		var query = 'INSERT INTO applications (user_id, amount_requested) VALUES (' + userid + ', ' + loanAmount + ')';
+		connection.query(query, function (err, rows, fields) {
+		if (err) throw err
+			logger.info("Data saved successfully")
+		});
+	}
+	
 	invoke.invokeChaincode(peers, channelName, chaincodeName, fcn, args, req.username, req.orgname)
 	.then(function(message) {
 		res.send(message);
@@ -418,4 +437,13 @@ app.get('/channels', function(req, res) {
 		message) {
 		res.send(message);
 	});
+});
+
+app.post('/login', function(req, res, next) {
+  	var query = 'SELECT * from users WHERE username = "' + req.body.userName + '" AND password = "' + req.body.password + '"';
+  		connection.query(query, function (err, rows, fields) {
+		if (err) throw err
+			res.json(rows[0])
+		})
+  //connection.end()
 });
