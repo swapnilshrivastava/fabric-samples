@@ -119,15 +119,20 @@ func createLoanRequest(stub shim.ChaincodeStubInterface, args []string) (string,
 	if len(args) != 5 {
 		return "", fmt.Errorf("Incorrect arguments. Expecting a key and a value")
 	}
+
 	var loanApplicationId = args[0]
+	var loanApplicationInput = args[1]
+	var loanApplicationdealerId = args[2]
+	var loanApplicationbankId = args[3]
+	var loanApplicationStatus = args[4]
 
-	//id := loanApplicationId
-	/*dealerId := args[1]
-	requestedAmount := args[2]
-	bankId := args[3]
-	status := "Requested"*/
+	id := loanApplicationId
+	dealerId := loanApplicationdealerId
+	status := loanApplicationStatus
+	requestedAmount := loanApplicationInput
+	bankId := loanApplicationbankId
 
-	loanApplication := &loanApplication{id: args[0], dealerId: args[1], requestedAmount: args[2], bankId: args[3], status: args[4]}
+	loanApplication := &loanApplication{id, dealerId, status, requestedAmount, bankId}
 
 	loanApplicationJSONasBytes, err := json.Marshal(loanApplication)
 
@@ -135,7 +140,7 @@ func createLoanRequest(stub shim.ChaincodeStubInterface, args []string) (string,
 	if err != nil {
 		return "", fmt.Errorf("Failed to set asset: %s", args[0])
 	}
-	return args[0], nil
+	return args[3], nil
 }
 
 // Get returns the value of the specified asset key
