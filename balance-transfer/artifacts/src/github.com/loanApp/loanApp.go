@@ -116,21 +116,21 @@ func (t *SimpleAsset) Invoke(stub shim.ChaincodeStubInterface) peer.Response {
 // Set stores the asset (both key and value) on the ledger. If the key exists,
 // it will override the value with the new one
 func createLoanRequest(stub shim.ChaincodeStubInterface, args []string) (string, error) {
-	if len(args) != 5 {
+	if len(args) != 2 {
 		return "", fmt.Errorf("Incorrect arguments. Expecting a key and a value")
 	}
 
 	var loanApplicationId = args[0]
 	var loanApplicationInput = args[1]
-	var loanApplicationdealerId = args[2]
+	/*var loanApplicationdealerId = args[2]
 	var loanApplicationbankId = args[3]
-	var loanApplicationStatus = args[4]
+	var loanApplicationStatus = args[4]*/
 
 	id := loanApplicationId
-	dealerId := loanApplicationdealerId
-	status := loanApplicationStatus
+	dealerId := "Dealer124"
+	status := "Requested"
 	requestedAmount := loanApplicationInput
-	bankId := loanApplicationbankId
+	bankId := "Bank124"
 
 	loanApplication := &loanApplication{id, dealerId, status, requestedAmount, bankId}
 
@@ -140,7 +140,7 @@ func createLoanRequest(stub shim.ChaincodeStubInterface, args []string) (string,
 	if err != nil {
 		return "", fmt.Errorf("Failed to set asset: %s", args[0])
 	}
-	return args[3], nil
+	return loanApplicationInput, nil
 }
 
 // Get returns the value of the specified asset key
