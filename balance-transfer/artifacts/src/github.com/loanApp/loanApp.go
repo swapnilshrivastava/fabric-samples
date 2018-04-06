@@ -186,9 +186,9 @@ func (t *SimpleAsset) queryLoanByBank(stub shim.ChaincodeStubInterface, args []s
 		return shim.Error("Incorrect number of arguments. Expecting 1")
 	}
 
-	bankId := args[0]
+	BankId := args[0]
 
-	queryString := fmt.Sprintf("{\"selector\":{\"docType\":\"loanApplication\",\"bankId\":\"%s\"}}", bankId)
+	queryString := fmt.Sprintf("{\"selector\":{\"docType\":\"loanApplication\",\"BankId\":\"%s\"}}", BankId)
 
 	queryResults, err := getQueryResultForQueryString(stub, queryString)
 	if err != nil {
