@@ -188,7 +188,8 @@ func (t *SimpleAsset) queryLoanByBank(stub shim.ChaincodeStubInterface, args []s
 
 	BankId := args[0]
 
-	queryString := fmt.Sprintf("{\"selector\":{\"docType\":\"loanApplication\",\"BankId\":\"%s\"}}", BankId)
+	//queryString := fmt.Sprintf("{\"selector\":{\"docType\":\"loanApplication\",\"BankId\":\"%s\"}}", BankId)
+	queryString := fmt.Sprintf("{\"selector\": {\"BankId\": {\"$eq\": \"bank123\" }}}", BankId)
 
 	queryResults, err := getQueryResultForQueryString(stub, queryString)
 	if err != nil {
